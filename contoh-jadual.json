@@ -1,0 +1,30 @@
+{
+  "profile": {
+    "teacher": "Nama Guru",
+    "school": "Nama Sekolah"
+  },
+  "lessons": [
+    {
+      "id": 1,
+      "day": "Ahad",
+      "start": "07:40",
+      "end": "08:10",
+      "className": "4 Bestari",
+      "subject": "Pendidikan Jasmani",
+      "location": "Padang sekolah",
+      "alarmMinutes": 5,
+      "alarmEnabled": true
+    },
+    {
+      "id": 2,
+      "day": "Isnin",
+      "start": "08:10",
+      "end": "08:40",
+      "className": "5 Bestari",
+      "subject": "Pendidikan Jasmani",
+      "location": "",
+      "alarmMinutes": 5,
+      "alarmEnabled": true
+    }
+  ]
+}

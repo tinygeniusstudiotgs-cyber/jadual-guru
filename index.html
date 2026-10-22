@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Jadual Guru">
+<title>Aplikasi Jadual Guru</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172033;background:#f4f6fa;font-synthesis:none}
+*{box-sizing:border-box}body{margin:0;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);background:#f4f6fa}
+header{background:#111827;color:#fff;padding:22px 18px 18px;border-radius:0 0 22px 22px}
+header small{color:#b9c3d5;letter-spacing:.08em;font-size:11px}h1{font-size:25px;margin:7px 0 4px}header p{margin:0;color:#cbd5e1;font-size:13px}
+main{max-width:760px;margin:auto;padding:15px 14px 34px}
+.panel{background:#fff;border:1px solid #e3e8f0;border-radius:17px;padding:15px;margin-bottom:13px;box-shadow:0 3px 12px #1c2b4510}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}
+h2{font-size:17px;margin:0 0 12px}label{display:block;font-size:12px;color:#566176;margin:0 0 5px}
+input,select,textarea,button{font:inherit}input,select,textarea{width:100%;padding:11px 12px;border:1px solid #d7deea;border-radius:10px;background:#fff;color:#172033;min-height:43px}
+textarea{min-height:80px;resize:vertical}.field{margin-bottom:11px;flex:1;min-width:130px}
+button{border:0;border-radius:10px;padding:11px 13px;background:#111827;color:white;font-weight:600;min-height:42px;cursor:pointer}
+button.secondary{background:#edf1f7;color:#1e293b}button.danger{background:#fff0f0;color:#b42318}button.small{font-size:12px;min-height:34px;padding:7px 9px}
+.daytabs{display:flex;gap:6px;overflow:auto;padding:1px 0 10px}.daytabs button{white-space:nowrap;flex:1;padding:9px 11px;background:#e7ebf2;color:#344054}.daytabs button.active{background:#111827;color:#fff}
+.lesson{display:flex;gap:11px;align-items:flex-start;padding:12px 0;border-top:1px solid #edf0f5}.time{background:#eef2f7;border-radius:10px;padding:8px 7px;min-width:82px;text-align:center;font-size:12px;font-weight:700}.details{flex:1;min-width:0}.details strong{display:block;font-size:14px}.details span{font-size:12px;color:#667085;display:block;margin-top:4px}
+.badge{font-size:11px;color:#176b4d;background:#e8f7ef;border-radius:999px;padding:4px 7px;display:inline-block;margin-top:7px}
+.empty{font-size:13px;color:#778196;padding:14px 0}.hint{font-size:12px;line-height:1.5;color:#697386}.status{font-size:12px;color:#176b4d;margin-top:8px;min-height:16px}
+.hidden{display:none!important}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.grid .field{min-width:0;margin:0}.filebox{border:1px dashed #b9c4d5;border-radius:12px;padding:12px;background:#fafbfe}.filebox input{border:0;padding:8px 0;min-height:auto}
+footer{text-align:center;color:#7c8799;font-size:11px;padding:10px}
+@media(max-width:420px){.grid{grid-template-columns:1fr}.panel{padding:13px}header{padding-left:16px}h1{font-size:23px}}
+@media print{body{background:#fff}header{background:#fff;color:#000;border-radius:0;padding:10px 0}header p,header small{color:#444}main{padding:0;max-width:none}.no-print,form,.daytabs,footer{display:none!important}.panel{box-shadow:none;border:1px solid #ddd;break-inside:avoid}}
+</style>
+</head>
+<body>
+<header>
+  <small>APLIKASI GURU • PROTOTAIP</small>
+  <h1>Jadual Waktu Guru</h1>
+  <p id="schoolLine">Urus jadual mengajar • Ahad hingga Khamis</p>
+</header>
+<main>
+  <section class="panel">
+    <h2>Profil ringkas</h2>
+    <div class="grid">
+      <div class="field"><label for="teacher">Nama guru</label><input id="teacher" value="Ahmad Affan Abdul Aziz"></div>
+      <div class="field"><label for="school">Nama sekolah</label><input id="school" value="SK Sultan Sulaiman 1"></div>
+    </div>
+    <div class="row no-print" style="margin-top:10px">
+      <button id="saveProfile">Simpan profil</button>
+      <span class="hint">Disimpan pada pelayar peranti ini.</span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="row between">
+      <h2>Jadual mingguan</h2>
+      <button class="secondary small no-print" id="printBtn">Cetak / PDF</button>
+    </div>
+    <div class="daytabs no-print" id="dayTabs"></div>
+    <div id="lessonList"></div>
+  </section>
+
+  <section class="panel no-print">
+    <h2 id="formTitle">Tambah waktu mengajar</h2>
+    <form id="lessonForm">
+      <input id="editId" type="hidden">
+      <div class="grid">
+        <div class="field"><label for="day">Hari</label><select id="day" required>
+          <option>Ahad</option><option>Isnin</option><option>Selasa</option><option>Rabu</option><option>Khamis</option>
+        </select></div>
+        <div class="field"><label for="className">Kelas</label><input id="className" placeholder="Contoh: 4 Bestari" required></div>
+        <div class="field"><label for="start">Masa mula</label><input id="start" type="time" value="07:40" required></div>
+        <div class="field"><label for="end">Masa tamat</label><input id="end" type="time" value="08:10" required></div>
+      </div>
+      <div class="field" style="margin-top:11px"><label for="subject">Mata pelajaran</label><input id="subject" placeholder="Contoh: Pendidikan Jasmani" required></div>
+      <div class="field"><label for="location">Lokasi (pilihan)</label><input id="location" placeholder="Contoh: Padang sekolah"></div>
+      <div class="grid">
+        <div class="field"><label for="alarmMinutes">Peringatan sebelum kelas</label><select id="alarmMinutes"><option value="0">Tiada</option><option value="5" selected>5 minit</option><option value="10">10 minit</option><option value="15">15 minit</option></select></div>
+        <div class="field"><label for="alarmEnabled">Peringatan</label><select id="alarmEnabled"><option value="true">Aktif (tetapan)</option><option value="false">Tidak aktif</option></select></div>
+      </div>
+      <div class="row" style="margin-top:13px">
+        <button type="submit" id="submitLesson">Tambah waktu</button>
+        <button type="button" class="secondary" id="cancelEdit">Kosongkan</button>
+      </div>
+      <div id="formStatus" class="status" role="status"></div>
+    </form>
+  </section>
+
+  <section class="panel no-print">
+    <h2>Import jadual</h2>
+    <p class="hint">Sokongan prototaip: JSON dan CSV/Excel yang disimpan sebagai CSV. Untuk gambar/PDF, gunakan OCR/AI untuk menukarkan jadual kepada JSON dahulu, kemudian import fail JSON di bawah. Import gambar/PDF automatik belum dibina dalam versi ini.</p>
+    <div class="filebox">
+      <label for="importFile">Pilih fail JSON atau CSV</label>
+      <input id="importFile" type="file" accept=".json,.csv,.txt,application/json,text/csv">
+      <div class="row"><button id="importBtn" type="button">Import fail</button><button id="templateBtn" type="button" class="secondary">Muat turun templat JSON</button></div>
+      <div id="importStatus" class="status" role="status"></div>
+    </div>
+  </section>
+
+  <section class="panel no-print">
+    <h2>Eksport dan sandaran</h2>
+    <div class="row">
+      <button id="exportBtn">Eksport JSON</button>
+      <button id="csvBtn" class="secondary">Eksport CSV</button>
+      <button id="clearBtn" class="danger">Padam semua jadual</button>
+    </div>
+    <p class="hint" style="margin-top:10px">Data prototaip disimpan dalam LocalStorage pelayar. Eksport JSON secara berkala untuk sandaran. Data tidak disegerakkan ke peranti lain.</p>
+    <div id="dataStatus" class="status" role="status"></div>
+  </section>
+  <footer>Prototaip demonstrasi • Bukan sistem rasmi KPM • Alarm sebenar belum dijadualkan.</footer>
+</main>
+<script>
+(() => {
+  const DAYS = ["Ahad","Isnin","Selasa","Rabu","Khamis"];
+  const KEY = "jadualGuruPrototypeV1";
+  const $ = id => document.getElementById(id);
+  let selectedDay = "Ahad";
+  let lessons = [];
+  let nextId = 1;
+  let profile = {teacher:"Ahmad Affan Abdul Aziz",school:"SK Sultan Sulaiman 1"};
+
+  function safeParse(s) { try { return JSON.parse(s); } catch { return null; } }
+  function load() {
+    const data = safeParse(localStorage.getItem(KEY) || "null");
+    if (data && Array.isArray(data.lessons)) {
+      lessons = data.lessons; nextId = Number(data.nextId) || (Math.max(0,...lessons.map(x=>Number(x.id)||0))+1);
+      profile = data.profile || profile;
+    } else {
+      lessons = [
+        {id:nextId++,day:"Ahad",start:"07:40",end:"08:10",className:"4 Bestari",subject:"Pendidikan Jasmani",location:"Padang sekolah",alarmMinutes:5,alarmEnabled:true},
+        {id:nextId++,day:"Ahad",start:"08:10",end:"08:40",className:"5 Bestari",subject:"Pendidikan Jasmani",location:"Padang sekolah",alarmMinutes:5,alarmEnabled:true},
+        {id:nextId++,day:"Isnin",start:"08:10",end:"08:40",className:"6 Bestari",subject:"Pendidikan Jasmani",location:"",alarmMinutes:5,alarmEnabled:true}
+      ];
+    }
+    $("teacher").value = profile.teacher || ""; $("school").value = profile.school || "";
+    save(false); render();
+  }
+  function save(show=true) {
+    localStorage.setItem(KEY, JSON.stringify({profile,lessons,nextId}));
+    if(show) $("dataStatus").textContent = "Data disimpan pada pelayar ini.";
+  }
+  function escapeHtml(v) { return String(v ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+  function renderTabs() {
+    $("dayTabs").innerHTML = DAYS.map(d=>`<button type="button" class="${d===selectedDay?'active':''}" data-day="${d}">${d}</button>`).join("");
+    $("dayTabs").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{selectedDay=b.dataset.day;$("day").value=selectedDay;render();}));
+  }
+  function render() {
+    $("schoolLine").textContent = (profile.school || "Nama sekolah belum diisi") + " • Ahad hingga Khamis";
+    renderTabs();
+    const rows = lessons.filter(x=>x.day===selectedDay).sort((a,b)=>String(a.start).localeCompare(String(b.start)));
+    $("lessonList").innerHTML = rows.length ? rows.map(x=>`
+      <div class="lesson">
+        <div class="time">${escapeHtml(x.start)}<br><span style="font-weight:400">hingga</span><br>${escapeHtml(x.end)}</div>
+        <div class="details"><strong>${escapeHtml(x.className)} · ${escapeHtml(x.subject)}</strong>
+          <span>${escapeHtml(x.location || "Lokasi tidak ditetapkan")}</span>
+          ${x.alarmEnabled && Number(x.alarmMinutes)>0?`<span class="badge">Peringatan ditetapkan: ${Number(x.alarmMinutes)} minit awal*</span>`:""}
+          <div class="row no-print" style="margin-top:8px"><button class="secondary small" data-edit="${x.id}">Edit</button><button class="danger small" data-delete="${x.id}">Padam</button></div>
+        </div>
+      </div>`).join("") : `<div class="empty">Tiada waktu mengajar pada ${selectedDay}. Tambah rekod menggunakan borang di bawah.</div>`;
+    $("lessonList").querySelectorAll("[data-edit]").forEach(b=>b.addEventListener("click",()=>editLesson(Number(b.dataset.edit))));
+    $("lessonList").querySelectorAll("[data-delete]").forEach(b=>b.addEventListener("click",()=>deleteLesson(Number(b.dataset.delete))));
+  }
+  function resetForm() {
+    $("lessonForm").reset(); $("editId").value=""; $("day").value=selectedDay;
+    $("start").value="07:40"; $("end").value="08:10"; $("alarmMinutes").value="5"; $("alarmEnabled").value="true";
+    $("formTitle").textContent="Tambah waktu mengajar"; $("submitLesson").textContent="Tambah waktu"; $("formStatus").textContent="";
+  }
+  function editLesson(id) {
+    const x=lessons.find(y=>y.id===id); if(!x)return;
+    $("editId").value=x.id; $("day").value=x.day; $("className").value=x.className; $("start").value=x.start;
+    $("end").value=x.end; $("subject").value=x.subject; $("location").value=x.location||"";
+    $("alarmMinutes").value=String(x.alarmMinutes ?? 0); $("alarmEnabled").value=String(x.alarmEnabled !== false);
+    $("formTitle").textContent="Edit waktu mengajar"; $("submitLesson").textContent="Simpan perubahan";
+    $("lessonForm").scrollIntoView({behavior:"smooth",block:"start"});
+  }
+  function deleteLesson(id) {
+    if(!confirm("Padam rekod waktu ini?"))return;
+    lessons=lessons.filter(x=>x.id!==id); save(); render();
+  }
+  $("lessonForm").addEventListener("submit",e=>{
+    e.preventDefault();
+    const x={id:$("editId").value?Number($("editId").value):nextId++,day:$("day").value,start:$("start").value,end:$("end").value,className:$("className").value.trim(),subject:$("subject").value.trim(),location:$("location").value.trim(),alarmMinutes:Number($("alarmMinutes").value),alarmEnabled:$("alarmEnabled").value==="true"};
+    if(!x.className || !x.subject){$("formStatus").textContent="Sila isi kelas dan mata pelajaran.";return;}
+    if(x.start>=x.end){$("formStatus").textContent="Masa tamat mesti selepas masa mula.";return;}
+    const clash=lessons.some(y=>y.id!==x.id && y.day===x.day && x.start<y.end && x.end>y.start);
+    if(clash && !confirm("Waktu ini bertindih dengan rekod lain. Simpan juga?"))return;
+    const i=lessons.findIndex(y=>y.id===x.id); if(i>=0)lessons[i]=x;else lessons.push(x);
+    selectedDay=x.day; save(); render(); resetForm(); $("formStatus").textContent="Rekod disimpan.";
+  });
+  $("cancelEdit").addEventListener("click",resetForm);
+  $("saveProfile").addEventListener("click",()=>{profile={teacher:$("teacher").value.trim(),school:$("school").value.trim()};save();render();});
+  $("printBtn").addEventListener("click",()=>window.print());
+
+  function download(name,content,type) {
+    const blob=new Blob([content],{type}); const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+  }
+  function exportObject(){return {version:"1.0",profile,lessons};}
+  $("exportBtn").addEventListener("click",()=>{download("jadual-guru.json",JSON.stringify(exportObject(),null,2),"application/json");$("dataStatus").textContent="Fail JSON dieksport."});
+  $("templateBtn").addEventListener("click",()=>{const template={profile:{teacher:"Nama Guru",school:"Nama Sekolah"},lessons:[{id:1,day:"Ahad",start:"07:40",end:"08:10",className:"4 Bestari",subject:"Pendidikan Jasmani",location:"Padang",alarmMinutes:5,alarmEnabled:true}]};download("templat-jadual.json",JSON.stringify(template,null,2),"application/json");});
+  $("csvBtn").addEventListener("click",()=>{const cols=["day","start","end","className","subject","location","alarmMinutes","alarmEnabled"];const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';const csv=[cols.join(","),...lessons.map(x=>cols.map(c=>q(x[c])).join(","))].join("\r\n");download("jadual-guru.csv","\ufeff"+csv,"text/csv;charset=utf-8");});
+  $("clearBtn").addEventListener("click",()=>{if(confirm("Padam SEMUA jadual yang disimpan pada peranti ini? Pastikan anda telah membuat sandaran jika perlu.")){lessons=[];save();render();$("dataStatus").textContent="Semua rekod jadual dipadam."}});
+
+  function parseCSV(text) {
+    const rows=[]; let row=[],cell="",quoted=false;
+    for(let i=0;i<text.length;i++){const c=text[i],n=text[i+1];if(c==='"'&&quoted&&n==='"'){cell+='"';i++;}else if(c==='"'){quoted=!quoted;}else if(c===","&&!quoted){row.push(cell);cell="";}else if((c==="\n"||c==="\r")&&!quoted){if(c==="\r"&&n==="\n")i++;row.push(cell);if(row.some(v=>v.trim()))rows.push(row);row=[];cell="";}else cell+=c;}
+    if(cell.length||row.length){row.push(cell);rows.push(row);}return rows;
+  }
+  function normalizeImported(data) {
+    const arr=Array.isArray(data)?data:(data && Array.isArray(data.lessons)?data.lessons:(data && Array.isArray(data.jadual)?data.jadual:null));
+    if(!arr)throw new Error("Format tidak dikenali. JSON perlu mempunyai senarai lessons atau jadual.");
+    return arr.map((x,i)=>{
+      const day=x.day||x.hari, start=x.start||x.masa_mula, end=x.end||x.masa_tamat;
+      const className=x.className||x.kelas, subject=x.subject||x.subjek;
+      if(!DAYS.includes(day)||!/^([01]\d|2[0-3]):[0-5]\d$/.test(start||"")||!/^([01]\d|2[0-3]):[0-5]\d$/.test(end||"")||!className||!subject||start>=end)throw new Error("Rekod "+(i+1)+" tidak lengkap atau tidak sah. Semak hari, masa, kelas dan subjek.");
+      return {id:nextId++,day,start,end,className:String(className),subject:String(subject),location:x.location||x.lokasi||"",alarmMinutes:Number(x.alarmMinutes??x.minit_awal??5),alarmEnabled:x.alarmEnabled??x.alarm_aktif??true};
+    });
+  }
+  $("importBtn").addEventListener("click",async()=>{
+    const file=$("importFile").files[0]; if(!file){$("importStatus").textContent="Pilih fail dahulu.";return;}
+    try{
+      const txt=await file.text(); let imported;
+      if(file.name.toLowerCase().endsWith(".csv")){
+        const rows=parseCSV(txt); if(rows.length<2)throw new Error("CSV perlu mempunyai tajuk lajur dan sekurang-kurangnya satu rekod.");
+        const headers=rows.shift().map(h=>h.trim().toLowerCase());
+        const mapped=rows.map(r=>Object.fromEntries(headers.map((h,i)=>[h,r[i]??""])));
+        imported=normalizeImported(mapped);
+      }else{
+        const obj=JSON.parse(txt);
+        imported=normalizeImported(obj);
+        if(obj.profile){profile={teacher:obj.profile.teacher||profile.teacher,school:obj.profile.school||profile.school};$("teacher").value=profile.teacher;$("school").value=profile.school;}
+      }
+      if(!imported.length)throw new Error("Tiada rekod untuk diimport.");
+      if(!confirm("Import "+imported.length+" rekod? Rekod akan ditambah kepada jadual sedia ada."))return;
+      lessons.push(...imported);save();render();$("importStatus").textContent=imported.length+" rekod berjaya diimport.";
+    }catch(err){$("importStatus").textContent="Import gagal: "+err.message;}
+  });
+  if("serviceWorker" in navigator && location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
+  load();
+})();
+</script>
+</body>
+</html>
